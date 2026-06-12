@@ -567,20 +567,17 @@ firebase.auth().onAuthStateChanged(function(user){
 });
 
 function persist(){
-  if(!_db||!_currentUser)return;
-  _db.collection('usuarios').doc(_currentUser.uid).set({processos:JSON.stringify(processos),prazos:JSON.stringify(prazos),suspensoes:JSON.stringify(suspensoes),updatedAt:new Date().toISOString()
-  }).catch(function(){toast('Erro ao salvar.','error');});
+  console.log('persist chamado — _db:', !!_db, '_currentUser:', !!_currentUser, 'processos:', processos.length);
+  if(!_db||!_currentUser){console.error('persist bloqueado: _db='+!!_db+' _currentUser='+!!_currentUser);return;}
+  _db.collection('usuarios').doc(_currentUser.uid).set({
+    processos:JSON.stringify(processos),
+    prazos:JSON.stringify(prazos),
+    suspensoes:JSON.stringify(suspensoes),
+    updatedAt:new Date().toISOString()
+  }).then(function(){console.log('Salvo com sucesso!');})
+  .catch(function(e){console.error('Erro ao salvar:',e);toast('Erro ao salvar.','error');});
 }
 
-const TODOS_TRIBS=[
-  'TJBA-1G','TJBA-2G',
-  'TJAC','TJAL','TJAM','TJAP','TJBA','TJCE','TJDF','TJES','TJGO','TJMA','TJMG','TJMS','TJMT','TJPA','TJPB','TJPE','TJPI','TJPR','TJRJ','TJRN','TJRO','TJRR','TJRS','TJSC','TJSE','TJSP','TJTO',
-  'TRT1','TRT2','TRT3','TRT4','TRT5','TRT6','TRT7','TRT8','TRT9','TRT10','TRT11','TRT12','TRT13','TRT14','TRT15','TRT16','TRT17','TRT18','TRT19','TRT20','TRT21','TRT22','TRT23','TRT24',
-  'TRF1','TRF2','TRF3','TRF4','TRF5','TRF6',
-  'STJ','STF','TST','TSE','STM'
-];
-
-const FERIADOS_FIXOS=['01-01','04-21','05-01','09-07','10-12','11-02','11-15','11-20','12-25'];
 
 function calcPascoa(y){
   const a=y%19,b=Math.floor(y/100),c=y%100;
@@ -768,7 +765,7 @@ function saveProcesso(){
     processos.push({id:'p'+Date.now(),tipo,numero,autor,reu,orgao,tribunal,rito,comarca,advAutor,advReu,obs,valor,criadoEm:today()});
     toast('Processo cadastrado','success');
   }
-  persist();closeModal('proc');renderAll();
+  console.log("saveProcesso: processos antes=",processos.length); persist(); closeModal('proc'); renderAll(); console.log("saveProcesso: processos depois=",processos.length);
 }
 
 function deleteProcesso(id){
